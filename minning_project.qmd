@@ -1,0 +1,204 @@
+---
+title: "Minning Project"
+author: "Athira, Neharika, Swati"
+format: html
+editor: visual
+---
+
+### Loading the required packages
+
+```{r}
+
+if(!require(pacman))
+  install.packages("pacman")
+
+pacman::p_load(
+  tidyverse,
+  ggplot2,
+  dplyr
+)
+
+```
+
+### Loading the dataset
+
+```{r}
+pokemon = read_csv("C:/Users/sweet/OneDrive/Desktop/Data Mining/Project/archive (19)/pokedex_(Update_05.20).csv")
+
+pokemon |>
+  glimpse()
+```
+
+
+```{r}
+head(pokemon)
+
+```
+
+### Remove the unwanted columns
+
+```{r}
+
+pokemon <- pokemon |>
+  select(-c("german_name", "japanese_name", "egg_type_number", 
+            "egg_type_1", "egg_type_2", "percentage_male", "egg_cycles", 
+            "ability_hidden", "catch_rate", "base_friendship", 
+            "base_experience", "growth_rate"))
+
+```
+
+```{r}
+
+pokemon
+
+```
+
+### Renaming the columns
+
+```{r}
+
+pokemon <- pokemon |>
+  rename_with(~ "number_id", 1) |>
+  glimpse()
+
+pokemon
+
+```
+
+### Removing the extra character
+
+```{r}
+
+pokemon$species <- gsub("Pokémon", "", pokemon$species)
+
+```
+
+```{r}
+
+pokemon
+
+```
+
+### Pivot Longer
+
+```{r}
+
+#pokemon <- pokemon |>
+  #pivot_longer(
+    #cols = c("type_1", "type_2"),
+    #names_to = "type",
+    #values_to = "type_value"
+  #) 
+
+#pokemon
+
+```
+
+```{r}
+
+#pokemon <- pokemon |>
+  #pivot_longer(
+    #cols = c("ability_1", "ability_2"),
+    #names_to = "ability",
+    #values_to = "ability_value"
+  #) 
+
+#pokemon
+
+```
+
+### Moving the columns
+
+```{r}
+
+#pokemon <- pokemon |>
+  #relocate("type", "type_value", .after = "type_number")
+
+#pokemon <- pokemon |>
+  #relocate("ability", "ability_value", .after = "abilities_number")
+
+```
+
+```{r}
+
+#pokemon
+
+```
+
+
+### Separating the pokemon according to their status
+
+```{r}
+
+legendary_pokemon <- pokemon |>
+  filter(status == "Legendary")
+
+legendary_pokemon
+
+sublegendary_pokemon <- pokemon |>
+  filter(status == "Sub Legendary") 
+
+sublegendary_pokemon
+
+normal_pokemon <- pokemon |>
+  filter(status == "Normal")
+
+normal_pokemon
+
+mythical_pokemon <- pokemon |>
+  filter(status == "Mythical") 
+
+mythical_pokemon
+
+```
+
+### Checking for missing values 
+
+```{r}
+
+missing_leg <- colSums(is.na(legendary_pokemon))
+
+missing_leg[missing_leg > 0]
+  
+
+```
+
+```{r}
+
+legendary_pokemon <- legendary_pokemon |>
+  mutate(ability_1 = ifelse(name == "Eternatus Eternamax", 
+                             "Poison", ability_1)) |>
+  mutate(ability_2 = ifelse(name == "Eternatus Eternamax", 
+                             "Dragon", ability_2)) |>
+  mutate(type_2 = if_else(is.na(type_2), "Unknown", type_2)) |>
+  mutate(ability_2 = if_else(is.na(ability_2), "Unknown", ability_2))
+
+legendary_pokemon
+  
+```
+
+
+```{r}
+
+missing_subleg <- colSums(is.na(sublegendary_pokemon))
+
+missing_subleg[missing_subleg > 0]
+
+```
+
+```{r}
+
+missing_nor <- colSums(is.na(normal_pokemon))
+
+missing_nor[missing_nor > 0]
+
+```
+
+```{r}
+
+missing_myth <- colSums(is.na(mythical_pokemon))
+
+missing_myth[missing_myth > 0]
+
+```
+
