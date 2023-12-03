@@ -15,7 +15,8 @@ if(!require(pacman))
 pacman::p_load(
   tidyverse,
   ggplot2,
-  dplyr
+  dplyr, 
+  patchwork
 )
 
 ```
@@ -28,7 +29,6 @@ pokemon = read_csv("C:/Users/sweet/OneDrive/Desktop/Data Mining/Project/archive 
 pokemon |>
   glimpse()
 ```
-
 
 ```{r}
 head(pokemon)
@@ -125,7 +125,6 @@ pokemon
 
 ```
 
-
 ### Separating the pokemon according to their status
 
 ```{r}
@@ -152,7 +151,7 @@ mythical_pokemon
 
 ```
 
-### Checking for missing values 
+### Checking for missing values
 
 ```{r}
 
@@ -167,14 +166,35 @@ missing_leg[missing_leg > 0]
 
 legendary_pokemon <- legendary_pokemon |>
   mutate(ability_1 = ifelse(name == "Eternatus Eternamax", 
-                             "Poison", ability_1)) |>
-  mutate(ability_2 = ifelse(name == "Eternatus Eternamax", 
-                             "Dragon", ability_2)) |>
+                             "Pressure", ability_1)) |>
   mutate(type_2 = if_else(is.na(type_2), "Unknown", type_2)) |>
   mutate(ability_2 = if_else(is.na(ability_2), "Unknown", ability_2))
 
 legendary_pokemon
   
+```
+
+```{r}
+
+mean_weight <- legendary_pokemon |>
+  group_by(species) |>
+  summarize(mean_weight = mean(weight_kg, na.rm = TRUE))
+
+legendary_pokemon <- legendary_pokemon |>
+  left_join(mean_weight, by = "species") |>
+  mutate(weight_kg = ifelse(is.na(weight_kg), mean_weight, weight_kg)) |>
+  select(-mean_weight)
+
+legendary_pokemon
+
+```
+
+```{r}
+
+missing_leg <- colSums(is.na(legendary_pokemon))
+
+missing_leg[missing_leg > 0]
+
 ```
 
 
@@ -183,6 +203,51 @@ legendary_pokemon
 missing_subleg <- colSums(is.na(sublegendary_pokemon))
 
 missing_subleg[missing_subleg > 0]
+
+```
+
+```{r}
+
+sublegendary_pokemon <- sublegendary_pokemon |>
+  mutate(type_2 = if_else(is.na(type_2), "Unknown", type_2)) |>
+  mutate(ability_2 = if_else(is.na(ability_2), "Unknown", ability_2))
+
+```
+
+```{r}
+
+missing_subleg <- colSums(is.na(sublegendary_pokemon))
+
+missing_subleg[missing_subleg > 0]
+
+```
+
+
+```{r}
+
+missing_nor <- colSums(is.na(normal_pokemon))
+
+missing_nor[missing_nor > 0]
+
+```
+
+```{r}
+
+nor_null <- normal_pokemon[is.na(normal_pokemon$ability_1), ]
+
+print(nor_null)
+
+```
+
+```{r}
+
+normal_pokemon <- normal_pokemon |>
+  mutate(ability_1 = ifelse(name == "Partner Pikachu", 
+                             "Static", ability_1)) |>
+  mutate(ability_1 = ifelse(name == "Partner Eevee", 
+                             "Run Away", ability_1)) |>
+  mutate(type_2 = if_else(is.na(type_2), "Unknown", type_2)) |>
+  mutate(ability_2 = if_else(is.na(ability_2), "Unknown", ability_2))
 
 ```
 
@@ -199,6 +264,247 @@ missing_nor[missing_nor > 0]
 missing_myth <- colSums(is.na(mythical_pokemon))
 
 missing_myth[missing_myth > 0]
+
+```
+
+```{r}
+
+mythical_pokemon <- mythical_pokemon |>
+  mutate(type_2 = if_else(is.na(type_2), "Unknown", type_2)) |>
+  mutate(ability_2 = if_else(is.na(ability_2), "Unknown", ability_2))
+
+```
+
+```{r}
+
+missing_myth <- colSums(is.na(mythical_pokemon))
+
+missing_myth[missing_myth > 0]
+
+```
+
+### Pivot Longer
+
+```{r}
+
+legendary_pokemon <- legendary_pokemon |>
+  select(-type_number) |>
+  pivot_longer(
+    cols = starts_with("type_"),
+    names_to = "type",
+    values_to = "type_value",
+    values_drop_na = TRUE
+  ) |>
+  pivot_longer(
+    cols = starts_with("ability_"),
+    names_to = "ability",
+    values_to = "ability_value",
+    values_drop_na = TRUE
+  )
+
+```
+
+```{r}
+
+legendary_pokemon <- legendary_pokemon |>
+  relocate("type", "type_value", .after = "species")
+
+legendary_pokemon <- legendary_pokemon |>
+  relocate("ability", "ability_value", .after = "abilities_number")
+
+legendary_pokemon
+
+```
+
+```{r}
+
+dim(legendary_pokemon)
+
+```
+
+```{r}
+
+sublegendary_pokemon <- sublegendary_pokemon |>
+  select(-type_number) |>
+  pivot_longer(
+    cols = starts_with("type_"),
+    names_to = "type",
+    values_to = "type_value",
+    values_drop_na = TRUE
+  ) |>
+  pivot_longer(
+    cols = starts_with("ability_"),
+    names_to = "ability",
+    values_to = "ability_value",
+    values_drop_na = TRUE
+  )
+
+```
+
+```{r}
+
+
+sublegendary_pokemon <- sublegendary_pokemon |>
+  relocate("type", "type_value", .after = "species")
+
+sublegendary_pokemon <- sublegendary_pokemon |>
+  relocate("ability", "ability_value", .after = "abilities_number")
+
+sublegendary_pokemon
+
+```
+
+```{r}
+
+dim(sublegendary_pokemon)
+
+```
+
+```{r}
+
+normal_pokemon <- normal_pokemon |>
+  select(-type_number) |>
+  pivot_longer(
+    cols = starts_with("type_"),
+    names_to = "type",
+    values_to = "type_value",
+    values_drop_na = TRUE
+  ) |>
+  pivot_longer(
+    cols = starts_with("ability_"),
+    names_to = "ability",
+    values_to = "ability_value",
+    values_drop_na = TRUE
+  )
+
+```
+
+```{r}
+
+normal_pokemon <- normal_pokemon |>
+  relocate("type", "type_value", .after = "species")
+
+normal_pokemon <- normal_pokemon |>
+  relocate("ability", "ability_value", .after = "abilities_number")
+
+normal_pokemon
+
+```
+
+```{r}
+
+dim(normal_pokemon)
+
+```
+
+```{r}
+
+mythical_pokemon <- mythical_pokemon |>
+  select(-type_number) |>
+  pivot_longer(
+    cols = starts_with("type_"),
+    names_to = "type",
+    values_to = "type_value",
+    values_drop_na = TRUE
+  ) |>
+  pivot_longer(
+    cols = starts_with("ability_"),
+    names_to = "ability",
+    values_to = "ability_value",
+    values_drop_na = TRUE
+  )
+
+```
+
+```{r}
+
+mythical_pokemon <- mythical_pokemon |>
+  relocate("type", "type_value", .after = "species")
+
+mythical_pokemon <- mythical_pokemon |>
+  relocate("ability", "ability_value", .after = "abilities_number")
+
+mythical_pokemon
+
+```
+
+```{r}
+
+dim(mythical_pokemon)
+
+```
+
+```{r}
+
+summary(legendary_pokemon)
+
+```
+
+```{r}
+
+ggplot(legendary_pokemon, aes(x = "", y = total_points)) +
+  geom_boxplot() +
+  labs(title = "Box Plot of Total Point for Legendary Pokemon",
+       y = "Total Points",
+       x = NULL) + 
+  theme_minimal()
+
+```
+
+```{r}
+
+summary(sublegendary_pokemon)
+
+```
+
+```{r}
+
+ggplot(sublegendary_pokemon, aes(x = "", y = total_points)) +
+  geom_boxplot() +
+  labs(title = "Box Plot of Total Point for Sub-legendary Pokemon",
+       y = "Total Points",
+       x = NULL) + 
+  theme_minimal()
+
+```
+
+```{r}
+
+summary(normal_pokemon)
+
+```
+
+```{r}
+
+ggplot(normal_pokemon, aes(x = "", y = total_points)) +
+  geom_boxplot() +
+  labs(title = "Box Plot of Total Point for Normal Pokemon",
+       y = "Total Points",
+       x = NULL) + 
+  theme_minimal()
+
+```
+
+```{r}
+
+summary(mythical_pokemon)
+
+```
+
+```{r}
+
+ggplot(mythical_pokemon, aes(x = "", y = total_points)) +
+  geom_boxplot() +
+  labs(title = "Box Plot of Total Point for Mythical Pokemon",
+       y = "Total Points",
+       x = NULL) + 
+  theme_minimal()
+
+```
+
+```{r}
+
+
 
 ```
 
