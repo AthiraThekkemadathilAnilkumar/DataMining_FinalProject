@@ -1,0 +1,176 @@
+### Loading Packages
+
+```{r}
+
+if(!require(pacman))
+  install.packages("pacman")
+
+pacman::p_load(
+  tidyverse,
+  ggplot2,
+  dplyr
+)
+
+```
+
+### Loading Dataset
+
+```{r}
+
+pokemon <- read_csv("https://raw.githubusercontent.com/AthiraThekkemadathilAnilkumar/DataMining_FinalProject/main/Data/pokedex_(Update_05.20).csv")
+
+```
+
+```{r}
+
+dim(pokemon)
+
+```
+
+```{r}
+
+head(pokemon)
+
+```
+
+```{r}
+
+str(pokemon)
+
+```
+
+### Data Pre-processing
+
+### Removing the Pokemon which are not normal
+
+```{r}
+
+pokemon <- pokemon |>
+  filter(!grepl("Mega ", name)) |>
+  filter(!grepl("Ash-", name)) |>
+  filter(!grepl("Zen Mode", name)) |>
+  filter(!grepl("Partner", name)) |>
+  filter(!grepl("Primal", name)) |>
+  filter(!grepl("Crown", name)) |>
+  filter(!grepl("Eternamax", name)) |>
+  glimpse()
+
+```
+
+### Dimensionality of Dataset
+
+```{r}
+
+dim(pokemon)
+
+```
+
+### Printing the column names
+
+```{r}
+
+colnames(pokemon)
+
+```
+
+### Removing irrevalant column names
+
+```{r}
+
+pokemon <- pokemon |>
+  select(-...1, 
+         -japanese_name, 
+         -german_name, 
+         -base_friendship, 
+         -ability_1, 
+         -ability_2,
+         -ability_hidden,
+         -abilities_number,
+         -base_experience, 
+         -egg_type_number,
+         -egg_type_1,
+         -egg_type_2,
+         -percentage_male,
+         -egg_cycles,
+         -species,
+         -type_number)
+
+colnames(pokemon)
+
+```
+
+```{r}
+
+head(pokemon)
+
+```
+
+### Unique Values in Status Column
+
+```{r}
+
+unique(pokemon$status)
+
+```
+
+### Replacing the Sub-Legendary Values to Legendary Values
+
+```{r}
+
+pokemon$status <- ifelse(
+  pokemon$status == "Sub Legendary", "Legendary", pokemon$status
+)
+
+```
+
+```{r}
+
+unique(pokemon$status)
+
+```
+
+### Checking NA Values
+
+```{r}
+
+colSums(is.na(pokemon))
+
+```
+
+### Data Exploration
+
+### Visualizing the frequency for each status
+
+```{r}
+
+status_count <- table(pokemon$status)
+
+status_data <- data.frame(
+  Status = names(status_count), 
+  Frequency = as.numeric(status_count)
+)
+
+print(status_data)
+
+```
+
+```{r}
+
+ggplot(status_data, 
+       aes(x = reorder(Status, - Frequency), 
+           y = Frequency, 
+           fill = Status)) + 
+  geom_bar(stat =  "identity", width = 0.5) + 
+  labs(
+    title = "Frequency of Pokémon",
+    x = "Status",
+    y = "Frequency"
+  ) + 
+  guides(fill = "none") +
+  theme_minimal() + 
+  coord_flip() + 
+  theme(axis.text.x = element_text(hjust = 1)) + 
+  scale_y_continuous(breaks = seq(0, 900, by = 100)) 
+
+```
+
