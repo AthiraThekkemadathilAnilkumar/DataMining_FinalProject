@@ -96,306 +96,136 @@ pokemon <- pokemon |>
 
 ```
 
-
-### Separating the pokemon according to their status
-
-```{r}
-
-legendary_pokemon <- pokemon |>
-  filter(status == 1)
-
-legendary_pokemon
-
-sublegendary_pokemon <- pokemon |>
-  filter(status == 2) 
-
-sublegendary_pokemon
-
-normal_pokemon <- pokemon |>
-  filter(status == 3)
-
-normal_pokemon
-
-mythical_pokemon <- pokemon |>
-  filter(status == 4) 
-
-mythical_pokemon
-
-```
-
 ### Checking for missing values
 
 ```{r}
 
-missing_leg <- colSums(is.na(legendary_pokemon))
+missing_pokemon <- colSums(is.na(pokemon))
 
-missing_leg[missing_leg > 0]
+missing_leg[missing_pokemon > 0]
   
 
 ```
 
 ```{r}
 
-legendary_pokemon <- legendary_pokemon |>
+pokemon <- pokemon |>
   mutate(ability_1 = ifelse(name == "Eternatus Eternamax", 
-                             "Pressure", ability_1)) |>
-  mutate(type_2 = if_else(is.na(type_2), "Unknown", type_2)) |>
-  mutate(ability_2 = if_else(is.na(ability_2), "Unknown", ability_2))
+                             "Pressure", ability_1),
+         type_2 = if_else(is.na(type_2), "Unknown", type_2),
+         ability_2 = if_else(is.na(ability_2), "Unknown", ability_2),
+         ability_1 = ifelse(name == "Partner Pikachu", 
+                             "Static", ability_1),
+         ability_1 = ifelse(name == "Partner Eevee", 
+                             "Run Away", ability_1))
 
-legendary_pokemon
+pokemon
   
 ```
 
 ```{r}
 
-mean_weight <- legendary_pokemon |>
+mean_weight <- pokemon |>
   group_by(species) |>
   summarize(mean_weight = mean(weight_kg, na.rm = TRUE))
 
-legendary_pokemon <- legendary_pokemon |>
+pokemon <- pokemon |>
   left_join(mean_weight, by = "species") |>
   mutate(weight_kg = ifelse(is.na(weight_kg), mean_weight, weight_kg)) |>
   select(-mean_weight)
 
-legendary_pokemon
+pokemon
 
 ```
 
 ```{r}
 
-missing_leg <- colSums(is.na(legendary_pokemon))
+missing_pokemon <- colSums(is.na(pokemon))
 
-missing_leg[missing_leg > 0]
-
-```
-
-
-```{r}
-
-missing_subleg <- colSums(is.na(sublegendary_pokemon))
-
-missing_subleg[missing_subleg > 0]
+missing_leg[missing_pokemon > 0]
 
 ```
 
 ```{r}
 
-sublegendary_pokemon <- sublegendary_pokemon |>
-  mutate(type_2 = if_else(is.na(type_2), "Unknown", type_2)) |>
-  mutate(ability_2 = if_else(is.na(ability_2), "Unknown", ability_2))
+dim(pokemon)
 
 ```
 
 ```{r}
 
-missing_subleg <- colSums(is.na(sublegendary_pokemon))
-
-missing_subleg[missing_subleg > 0]
+summary(pokemon)
 
 ```
 
+### Frequency Count - Type
 
 ```{r}
 
-missing_nor <- colSums(is.na(normal_pokemon))
+type1_count_pok <- table(pokemon$type_1)
 
-missing_nor[missing_nor > 0]
+print(type1_count_pok)
 
-```
+type1_count_pok <- data.frame(Type = names(type1_count_pok), Frequency = as.numeric(type1_count_pok))
 
-```{r}
-
-nor_null <- normal_pokemon[is.na(normal_pokemon$ability_1), ]
-
-print(nor_null)
+print(type1_count_pok)
 
 ```
 
-```{r}
-
-normal_pokemon <- normal_pokemon |>
-  mutate(ability_1 = ifelse(name == "Partner Pikachu", 
-                             "Static", ability_1)) |>
-  mutate(ability_1 = ifelse(name == "Partner Eevee", 
-                             "Run Away", ability_1)) |>
-  mutate(type_2 = if_else(is.na(type_2), "Unknown", type_2)) |>
-  mutate(ability_2 = if_else(is.na(ability_2), "Unknown", ability_2))
-
-```
-
-```{r}
-
-missing_nor <- colSums(is.na(normal_pokemon))
-
-missing_nor[missing_nor > 0]
-
-```
-
-```{r}
-
-missing_myth <- colSums(is.na(mythical_pokemon))
-
-missing_myth[missing_myth > 0]
-
-```
-
-```{r}
-
-mythical_pokemon <- mythical_pokemon |>
-  mutate(type_2 = if_else(is.na(type_2), "Unknown", type_2)) |>
-  mutate(ability_2 = if_else(is.na(ability_2), "Unknown", ability_2))
-
-```
-
-```{r}
-
-missing_myth <- colSums(is.na(mythical_pokemon))
-
-missing_myth[missing_myth > 0]
-
-```
-
-```{r}
-
-dim(legendary_pokemon)
-
-```
-
-```{r}
-
-dim(sublegendary_pokemon)
-
-```
-
-```{r}
-
-dim(normal_pokemon)
-
-```
-
-```{r}
-
-dim(mythical_pokemon)
-
-```
-
-```{r}
-
-summary(legendary_pokemon)
-
-```
-
-```{r}
-
-ggplot(legendary_pokemon, aes(x = "", y = total_points)) +
-  geom_boxplot() +
-  labs(title = "Box Plot of Total Point for Legendary Pokemon",
-       y = "Total Points",
-       x = NULL) + 
-  theme_minimal()
-
-```
-
-```{r}
-
-summary(sublegendary_pokemon)
-
-```
-
-```{r}
-
-ggplot(sublegendary_pokemon, aes(x = "", y = total_points)) +
-  geom_boxplot() +
-  labs(title = "Box Plot of Total Point for Sub-legendary Pokemon",
-       y = "Total Points",
-       x = NULL) + 
-  theme_minimal()
-
-```
-
-```{r}
-
-summary(normal_pokemon)
-
-```
-
-```{r}
-
-ggplot(normal_pokemon, aes(x = "", y = total_points)) +
-  geom_boxplot() +
-  labs(title = "Box Plot of Total Point for Normal Pokemon",
-       y = "Total Points",
-       x = NULL) + 
-  theme_minimal()
-
-```
-
-```{r}
-
-summary(mythical_pokemon)
-
-```
-
-```{r}
-
-ggplot(mythical_pokemon, aes(x = "", y = total_points)) +
-  geom_boxplot() +
-  labs(title = "Box Plot of Total Point for Mythical Pokemon",
-       y = "Total Points",
-       x = NULL) + 
-  theme_minimal()
-
-```
-
-### Frequency Count
-
-```{r}
-
-type1_count_leg <- table(legendary_pokemon$type_1)
-
-print(type1_count_leg)
-
-type1_data_leg <- data.frame(Type = names(type1_count_leg), Frequency = as.numeric(type1_count_leg))
-
-print(type1_data_leg)
-
-```
-
-### Visualizing 
+### Visualizing - Type
 
 ```{r warning=FALSE, error=FALSE, message=FALSE}
 
-ggplot(type1_data_leg, aes(x = reorder(Type, -Frequency), 
+ggplot(type1_count_pok, aes(x = reorder(Type, -Frequency), 
                           y = Frequency, fill = Type)) +
   geom_bar(stat = "identity") +
-  labs(title = "Type Distribution for Legendary Pokemon", x = "Legendary Pokémon Types", y = "Frequency") +
+  labs(title = "Type Distribution for Pokemon", x = "Pokémon Types", 
+       y = "Frequency") +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
-  guides(fill = FALSE)
+  coord_flip() +
+  theme(axis.text.x = element_text(hjust = 1)) + 
+  guides(fill = FALSE) + 
+  scale_y_continuous(breaks = seq(0, 150, 25))
+
+```
+
+### Frequency Count - Ability
+
+```{r}
+
+ability1_count_pok <- table(pokemon$ability_1)
+
+print(ability1_count_pok)
+
+ability1_count_pok <- data.frame(Ability = names(ability1_count_pok), Frequency = as.numeric(ability1_count_pok))
+
+print(ability1_count_pok)
 
 ```
 
 ```{r}
 
-ability1_count_leg <- table(legendary_pokemon$ability_1)
+abilities_pok_10 <- ability1_count_pok[ability1_count_pok$Frequency > 10, ]
 
-print(ability1_count_leg)
-
-ability1_count_leg <- data.frame(Ability = names(ability1_count_leg), Frequency = as.numeric(ability1_count_leg))
-
-print(ability1_count_leg)
+print(abilities_pok_10)
 
 ```
 
+
+### Visualizing - Ability
+
 ```{r}
 
-ggplot(ability1_count_leg, aes(x = reorder(Ability, -Frequency), 
+ggplot(abilities_pok_10, aes(x = reorder(Ability, -Frequency), 
                           y = Frequency, fill = Ability)) +
   geom_bar(stat = "identity") +
-  labs(title = "Ability Distribution for Legendary Pokemon", x = "Legendary Pokémon Abilities", y = "Frequency") +
+  labs(title = "Ability Distribution for Pokemon", x = "Pokémon Abilities", y = "Frequency") +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  coord_flip() +
+  theme(axis.text.x = element_text(hjust = 1)) + 
   guides(fill = FALSE)
-
 ```
+
+
+
 
