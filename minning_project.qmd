@@ -79,73 +79,45 @@ pokemon
 
 ```
 
-### Pivot Longer
+### Converting categorical variable into numerical format
 
 ```{r}
 
-#pokemon <- pokemon |>
-  #pivot_longer(
-    #cols = c("type_1", "type_2"),
-    #names_to = "type",
-    #values_to = "type_value"
-  #) 
-
-#pokemon
-
-```
-
-```{r}
-
-#pokemon <- pokemon |>
-  #pivot_longer(
-    #cols = c("ability_1", "ability_2"),
-    #names_to = "ability",
-    #values_to = "ability_value"
-  #) 
-
-#pokemon
+pokemon <- pokemon |>
+  mutate(
+    status = case_when(
+      status == "Legendary" ~ 1,
+      status == "Sub Legendary" ~ 2,
+      status == "Normal" ~ 3,
+      status == "Mythical" ~ 4
+    )
+  ) |>
+  glimpse()
 
 ```
 
-### Moving the columns
-
-```{r}
-
-#pokemon <- pokemon |>
-  #relocate("type", "type_value", .after = "type_number")
-
-#pokemon <- pokemon |>
-  #relocate("ability", "ability_value", .after = "abilities_number")
-
-```
-
-```{r}
-
-#pokemon
-
-```
 
 ### Separating the pokemon according to their status
 
 ```{r}
 
 legendary_pokemon <- pokemon |>
-  filter(status == "Legendary")
+  filter(status == 1)
 
 legendary_pokemon
 
 sublegendary_pokemon <- pokemon |>
-  filter(status == "Sub Legendary") 
+  filter(status == 2) 
 
 sublegendary_pokemon
 
 normal_pokemon <- pokemon |>
-  filter(status == "Normal")
+  filter(status == 3)
 
 normal_pokemon
 
 mythical_pokemon <- pokemon |>
-  filter(status == "Mythical") 
+  filter(status == 4) 
 
 mythical_pokemon
 
@@ -283,74 +255,9 @@ missing_myth[missing_myth > 0]
 
 ```
 
-### Pivot Longer
-
-```{r}
-
-legendary_pokemon <- legendary_pokemon |>
-  select(-type_number) |>
-  pivot_longer(
-    cols = starts_with("type_"),
-    names_to = "type",
-    values_to = "type_value",
-    values_drop_na = TRUE
-  ) |>
-  pivot_longer(
-    cols = starts_with("ability_"),
-    names_to = "ability",
-    values_to = "ability_value",
-    values_drop_na = TRUE
-  )
-
-```
-
-```{r}
-
-legendary_pokemon <- legendary_pokemon |>
-  relocate("type", "type_value", .after = "species")
-
-legendary_pokemon <- legendary_pokemon |>
-  relocate("ability", "ability_value", .after = "abilities_number")
-
-legendary_pokemon
-
-```
-
 ```{r}
 
 dim(legendary_pokemon)
-
-```
-
-```{r}
-
-sublegendary_pokemon <- sublegendary_pokemon |>
-  select(-type_number) |>
-  pivot_longer(
-    cols = starts_with("type_"),
-    names_to = "type",
-    values_to = "type_value",
-    values_drop_na = TRUE
-  ) |>
-  pivot_longer(
-    cols = starts_with("ability_"),
-    names_to = "ability",
-    values_to = "ability_value",
-    values_drop_na = TRUE
-  )
-
-```
-
-```{r}
-
-
-sublegendary_pokemon <- sublegendary_pokemon |>
-  relocate("type", "type_value", .after = "species")
-
-sublegendary_pokemon <- sublegendary_pokemon |>
-  relocate("ability", "ability_value", .after = "abilities_number")
-
-sublegendary_pokemon
 
 ```
 
@@ -362,69 +269,7 @@ dim(sublegendary_pokemon)
 
 ```{r}
 
-normal_pokemon <- normal_pokemon |>
-  select(-type_number) |>
-  pivot_longer(
-    cols = starts_with("type_"),
-    names_to = "type",
-    values_to = "type_value",
-    values_drop_na = TRUE
-  ) |>
-  pivot_longer(
-    cols = starts_with("ability_"),
-    names_to = "ability",
-    values_to = "ability_value",
-    values_drop_na = TRUE
-  )
-
-```
-
-```{r}
-
-normal_pokemon <- normal_pokemon |>
-  relocate("type", "type_value", .after = "species")
-
-normal_pokemon <- normal_pokemon |>
-  relocate("ability", "ability_value", .after = "abilities_number")
-
-normal_pokemon
-
-```
-
-```{r}
-
 dim(normal_pokemon)
-
-```
-
-```{r}
-
-mythical_pokemon <- mythical_pokemon |>
-  select(-type_number) |>
-  pivot_longer(
-    cols = starts_with("type_"),
-    names_to = "type",
-    values_to = "type_value",
-    values_drop_na = TRUE
-  ) |>
-  pivot_longer(
-    cols = starts_with("ability_"),
-    names_to = "ability",
-    values_to = "ability_value",
-    values_drop_na = TRUE
-  )
-
-```
-
-```{r}
-
-mythical_pokemon <- mythical_pokemon |>
-  relocate("type", "type_value", .after = "species")
-
-mythical_pokemon <- mythical_pokemon |>
-  relocate("ability", "ability_value", .after = "abilities_number")
-
-mythical_pokemon
 
 ```
 
@@ -502,9 +347,55 @@ ggplot(mythical_pokemon, aes(x = "", y = total_points)) +
 
 ```
 
+### Frequency Count
+
 ```{r}
 
+type1_count_leg <- table(legendary_pokemon$type_1)
 
+print(type1_count_leg)
+
+type1_data_leg <- data.frame(Type = names(type1_count_leg), Frequency = as.numeric(type1_count_leg))
+
+print(type1_data_leg)
+
+```
+
+### Visualizing 
+
+```{r warning=FALSE, error=FALSE, message=FALSE}
+
+ggplot(type1_data_leg, aes(x = reorder(Type, -Frequency), 
+                          y = Frequency, fill = Type)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Type Distribution for Legendary Pokemon", x = "Legendary Pokémon Types", y = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  guides(fill = FALSE)
+
+```
+
+```{r}
+
+ability1_count_leg <- table(legendary_pokemon$ability_1)
+
+print(ability1_count_leg)
+
+ability1_count_leg <- data.frame(Ability = names(ability1_count_leg), Frequency = as.numeric(ability1_count_leg))
+
+print(ability1_count_leg)
+
+```
+
+```{r}
+
+ggplot(ability1_count_leg, aes(x = reorder(Ability, -Frequency), 
+                          y = Frequency, fill = Ability)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Ability Distribution for Legendary Pokemon", x = "Legendary Pokémon Abilities", y = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + 
+  guides(fill = FALSE)
 
 ```
 
