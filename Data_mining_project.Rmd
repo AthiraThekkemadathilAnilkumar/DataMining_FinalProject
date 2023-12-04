@@ -8,7 +8,8 @@ if(!require(pacman))
 pacman::p_load(
   tidyverse,
   ggplot2,
-  dplyr
+  dplyr,
+  ggrepel
 )
 
 ```
@@ -171,6 +172,126 @@ ggplot(status_data,
   coord_flip() + 
   theme(axis.text.x = element_text(hjust = 1)) + 
   scale_y_continuous(breaks = seq(0, 900, by = 100)) 
+
+```
+
+### Percentage ditribution
+
+```{r}
+
+pokemon_per <- prop.table(table(pokemon$status)) * 100
+
+print(pokemon_per)
+
+```
+
+```{r warning=FALSE, error=FALSE, message=FALSE}
+
+pokemon_growth_rate <- pokemon |>
+  group_by(status, growth_rate) |>
+  summarise(percentages = n()) |>
+  group_by(status) |>
+  mutate(percentages = (percentages / sum(percentages)) * 100) |>
+  mutate(percentages = round(percentages, 2)) |>
+  rename(growth_rate = growth_rate)
+
+```
+
+```{r}
+
+print(pokemon_growth_rate)
+
+```
+
+```{r}
+
+ggplot(pokemon_growth_rate, 
+       aes(x = status, y = percentages, fill = as.factor(growth_rate))) +
+  geom_bar(stat = "identity", position = "stack", width = 0.5) +
+  guides(fill = "none") +
+  labs(title = "Distribution of growth rate", 
+       x = "Status", 
+       y = "Percentages") +
+  theme_minimal()
+  
+```
+
+### Total Point Distribution
+
+```{r}
+
+ggplot(pokemon, aes(x = status, y = total_points)) + 
+  geom_boxplot(aes(fill = status)) + 
+  guides(fill = "none") + 
+  labs(title = "Distribution of Total Points", 
+       x = "Status", 
+       y = "Total Points") +
+  theme_minimal()
+
+```
+
+### Catch Rate Distribution
+
+```{r warning=FALSE, error=FALSE, message=FALSE}
+
+ggplot(pokemon, 
+       aes(x = status, y = catch_rate, fill = status)) + 
+  geom_boxplot() +
+  guides(fill = "none") +
+  labs(
+    title = "Distribution of catch rate", 
+    x = "Status", 
+    y = "Catch Rate"
+  ) + 
+  theme_minimal()
+
+```
+
+### Distribution of Weight
+
+```{r}
+
+ggplot(pokemon, aes(x = weight_kg, y = status, fill = status)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Weight (KG)", 
+       x = "Weight (KG)", 
+       y = "Status") +
+  guides(fill = "none") +
+  theme_minimal()
+
+```
+
+### Distribution of Height
+
+```{r}
+
+ggplot(pokemon, aes(x = status, y = height_m, fill = status)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Height (M)", 
+       x = "Status", y = "Height (M)") +
+  guides(fill = "none") +
+  theme_minimal()
+
+```
+
+### Correlation between Height and Weight
+
+```{r}
+
+correlation_matrix <- cor(pokemon[c("height_m", "weight_kg")])
+
+print(correlation_matrix)
+
+```
+
+```{r}
+
+ggplot(pokemon, aes(x = height_m, y = weight_kg, 
+                    color = status)) +
+  geom_point() +
+  labs(title = "Scatter plot of Height vs Weight by status", 
+       x = "Height (m)", y = "Weight (kg)") +
+  theme_minimal() 
 
 ```
 
