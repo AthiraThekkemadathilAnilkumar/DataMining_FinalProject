@@ -1,15 +1,16 @@
 ### Loading Packages
 
 ```{r}
-
-if(!require(pacman))
+f(!require(pacman))
   install.packages("pacman")
 
 pacman::p_load(
   tidyverse,
   ggplot2,
   dplyr,
-  ggrepel
+  arules,
+  arulesViz,
+  rCBA
 )
 
 ```
@@ -83,8 +84,6 @@ pokemon <- pokemon |>
          -japanese_name, 
          -german_name, 
          -base_friendship, 
-         -ability_1, 
-         -ability_2,
          -ability_hidden,
          -abilities_number,
          -base_experience, 
@@ -93,11 +92,9 @@ pokemon <- pokemon |>
          -egg_type_2,
          -percentage_male,
          -egg_cycles,
-         -species,
          -type_number)
 
 colnames(pokemon)
-
 ```
 
 ```{r}
@@ -293,5 +290,46 @@ ggplot(pokemon, aes(x = height_m, y = weight_kg,
        x = "Height (m)", y = "Weight (kg)") +
   theme_minimal() 
 
+```
+
+## Data Mining 
+
+### Association rule 
+
+```{r}
+# Discretization of continuous variables
+pokemon$TotalPoints_binned <- cut(pokemon$total_points, breaks = 3, labels = c("Low", "Medium", "High"))
+pokemon$CatchRate_category <- cut(pokemon$catch_rate, breaks = c(0, 50, 100, 255), labels = c("Low", "Medium", "High"))
+
+# Define bins for Weight and Height based on quartiles (you can customize these)
+weight_bins <- quantile(pokemon$weight_kg, probs = c(0, 0.33, 0.66, 1), na.rm = TRUE)
+height_bins <- quantile(pokemon$height_m, probs = c(0, 0.33, 0.66, 1), na.rm = TRUE)
+pokemon$WeightCategory <- cut(pokemon$weight_kg, breaks = weight_bins, labels = c("Light", "Medium", "Heavy"))
+pokemon$HeightCategory <- cut(pokemon$height_m, breaks = height_bins, labels = c("Short", "Medium", "Tall"))
+```
+
+```{r}
+#Select relevant columns for association rule mining
+selected_data <- pokemon[, c("TotalPoints_binned", "CatchRate_category", "WeightCategory", "HeightCategory", "status")]
+
+# Convert the data to transactions format
+trans_data <- as(selected_data, "transactions")
+
+# Apply association rule mining (using Apriori algorithm)
+association_rules <- apriori(trans_data, 
+                             parameter = list(support = 0.1, confidence = 0.7), 
+                             control = list(verbose = TRUE))
+
+```
+
+```{r}
+# Show the generated association rules
+inspect(association_rules)
+```
+```{r}
+# Apply association rule mining using FP-Growth algorithm
+fp_growth_rules <- fpgrowth(trans_data, 
+                            parameter = list(support = 0.1, confidence = 0.5),
+                            control = list(verbose = TRUE))
 ```
 
