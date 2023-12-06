@@ -19,9 +19,17 @@ pacman::p_load(
   pROC,
   grid,
   recipes,
-  kernlab
+  kernlab,
+  preprocessCore
 )
 ```
+
+```{r warning=FALSE, error=FALSE, message=FALSE}
+
+library(caret)
+
+```
+
 
 ### Loading Dataset
 
@@ -530,6 +538,74 @@ print(conf_matrix$table)
 ```{r}
 
 plot <- levelplot(conf_matrix$table, col.regions = colorRampPalette(c("white", "darkgreen"))(20))
+
+print(plot)
+
+```
+
+### KNN
+
+### Fit the ksvm model directly
+
+```{r}
+
+sum(is.na(X_train))
+
+```
+
+### Imputation of missing values and building the model
+
+```{r warning=FALSE, error=FALSE, message=FALSE}
+
+model_knn <- train(
+  x = X_train,
+  y = y_train,
+  method = "knn",
+  preProcess = "medianImpute",
+  trControl = trainControl(method = "cv", number = 5, verboseIter = TRUE),
+  metric = "Accuracy"
+)
+
+```
+
+### Evaluate the model
+
+```{r}
+
+acc_train_knn <- mean(model_knn$results$Accuracy)
+print(paste("Training Accuracy:", round(acc_train_knn, 4)))
+
+```
+
+### Test accuracy
+
+```{r}
+
+acc_test_knn <- conf_matrix$overall["Accuracy"]
+print(paste("Test Accuracy:", round(acc_test_knn, 4)))
+
+```
+
+### Generate classification report
+
+```{r}
+
+pred <- factor(pred)
+y_test <- factor(y_test)
+
+conf_matrix_knn <- confusionMatrix(pred, y_test)
+
+class_metrics_knn <- conf_matrix$byClass
+
+print(class_metrics_knn)
+
+```
+
+### Confusion Matrix
+
+```{r}
+
+plot <- levelplot(conf_matrix_knn$table, col.regions = colorRampPalette(c("white", "darkgreen"))(20))
 
 print(plot)
 
