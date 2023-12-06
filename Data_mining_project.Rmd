@@ -1,7 +1,7 @@
 ### Loading Packages
 
 ```{r}
-f(!require(pacman))
+(!require(pacman))
   install.packages("pacman")
 
 pacman::p_load(
@@ -134,6 +134,11 @@ unique(pokemon$status)
 colSums(is.na(pokemon))
 
 ```
+```{r}
+pokemon$IsLegendary <- ifelse(pokemon$status == "Legendary", TRUE, FALSE)
+print(pokemon)
+```
+
 
 ### Data Exploration
 
