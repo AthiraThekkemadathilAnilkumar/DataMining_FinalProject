@@ -648,6 +648,9 @@ print(paste("Random Forest Test Accuracy:", round(acc_test_rf, 4)))
 
 ```{r}
 
+pred_rf <- factor(pred_rf)
+y_test <- factor(y_test)
+
 conf_matrix_rf <- confusionMatrix(pred_rf, y_test)
 print("Confusion Matrix for Random Forest:")
 print(conf_matrix_rf$table)
@@ -718,6 +721,9 @@ print(paste("KNN Test Accuracy:", round(acc_test_knn, 4)))
 ### Generate classification report
 
 ```{r}
+
+pred_knn <- factor(pred_knn)
+y_test <- factor(y_test)
 
 conf_matrix_knn <- confusionMatrix(pred_knn, y_test)
 print("Confusion Matrix for KNN:")
