@@ -1,7 +1,7 @@
 ### Loading Packages
 
-```{r}
-(!require(pacman))
+```{r warning=FALSE, error=FALSE, message=FALSE}
+if(!require(pacman))
   install.packages("pacman")
 
 pacman::p_load(
@@ -11,14 +11,21 @@ pacman::p_load(
   arules,
   arulesViz,
   rCBA,
-  plotly
+  plotly,
+  caret,
+  ROSE,
+  randomForest,
+  RANN,
+  pROC,
+  grid,
+  recipes,
+  kernlab
 )
-
 ```
 
 ### Loading Dataset
 
-```{r}
+```{r warning=FALSE, error=FALSE, message=FALSE}
 
 pokemon <- read_csv("https://raw.githubusercontent.com/AthiraThekkemadathilAnilkumar/DataMining_FinalProject/main/Data/pokedex_(Update_05.20).csv")
 
@@ -135,6 +142,31 @@ unique(pokemon$status)
 colSums(is.na(pokemon))
 
 ```
+
+```{r}
+
+rows_with_na <- pokemon[!complete.cases(pokemon), ]
+
+print(rows_with_na)
+
+
+```
+
+```{r}
+
+pokemon <- pokemon |>
+  group_by(type_1) |>
+  mutate(catch_rate = ifelse(is.na(catch_rate), mean(catch_rate, na.rm = TRUE), catch_rate))
+
+```
+
+```{r}
+
+colSums(is.na(pokemon))
+
+```
+
+
 ```{r}
 pokemon$IsLegendary <- ifelse(pokemon$status == "Legendary", TRUE, FALSE)
 print(pokemon)
@@ -414,5 +446,92 @@ inspect(association_rules)
 fp_growth_rules <- fpgrowth(trans_data, 
                             parameter = list(support = 0.1, confidence = 0.5),
                             control = list(verbose = TRUE))
+```
+
+### Buidling the model
+
+### Random Forest
+
+### Creating the pipeline
+
+```{r}
+
+preproc <- preProcess(X_train, method = "medianImpute")
+
+```
+
+### Setting parameters
+
+```{r}
+
+params <- expand.grid(
+  strategy = c("mean", "median", "constant"),
+  n_estimators = seq(20, 101, by = 10),
+  max_depth = seq(10, 51, by = 10)
+)
+
+```
+
+### Building the model with grid search
+
+```{r warning=FALSE, error=FALSE, message=FALSE}
+
+model_rf_os <- train(
+  y = y_train,
+  x = predict(preproc, X_train),
+  method = "rf",
+  trControl = trainControl(method = "cv", number = 5, verboseIter = TRUE),
+  metric = "Accuracy"
+)
+
+```
+
+### Evaluating results
+
+```{r}
+
+acc_train <- mean(model_rf_os$results$Accuracy)
+print(paste("Training Accuracy:", round(acc_train, 4)))
+
+```
+
+### Test Accuracy
+
+```{r}
+
+pred <- predict(model_rf_os, newdata = X_test)
+acc_test <- sum(pred == y_test) / length(y_test)
+print(paste("Test Accuracy:", round(acc_test, 4)))
+
+```
+
+```{r}
+
+pred <- factor(pred)
+y_test <- factor(y_test)
+
+conf_matrix <- confusionMatrix(pred, y_test)
+
+class_metrics <- conf_matrix$byClass
+
+print(class_metrics)
+
+
+```
+
+```{r}
+
+print(conf_matrix$table)
+
+```
+
+### Confusion Matrix
+
+```{r}
+
+plot <- levelplot(conf_matrix$table, col.regions = colorRampPalette(c("white", "darkgreen"))(20))
+
+print(plot)
+
 ```
 
