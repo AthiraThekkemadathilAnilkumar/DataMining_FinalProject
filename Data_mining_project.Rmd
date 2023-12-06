@@ -8,9 +8,7 @@ pacman::p_load(
   tidyverse,
   ggplot2,
   dplyr,
-  arules,
   arulesViz,
-  rCBA,
   plotly,
   caret,
   ROSE,
@@ -20,7 +18,8 @@ pacman::p_load(
   grid,
   recipes,
   kernlab,
-  preprocessCore
+  preprocessCore,
+  arules
 )
 ```
 
@@ -56,6 +55,13 @@ head(pokemon)
 str(pokemon)
 
 ```
+```{r}
+# List the column names
+column_names <- names(pokemon)
+column_names
+```
+
+
 
 ### Data Pre-processing
 
@@ -370,42 +376,42 @@ plots <- list()
 
 # Create subplots for each type using ggplot2
 
- plot1 <- ggplot(pokemon, aes(x = IsLegendary, y = attack), fill = IsLegendary) +
+ plot1 <- ggplot(pokemon, aes(x = IsLegendary, y = attack, fill = "pink")) +
   geom_boxplot() +
   labs(title = "Attack", x = "Legendary", y = "Attack") +
   theme_minimal()
  
  plot1
  
-  plot2 <- ggplot(pokemon, aes(x = IsLegendary, y = defense), fill = IsLegendary) +
+  plot2 <- ggplot(pokemon, aes(x = IsLegendary, y = defense, fill = "lightyellow")) +
   geom_boxplot() +
   labs(title = "Defense", x = "Legendary", y = "Defense") +
   theme_minimal()
  
  plot2
  
- plot3 <- ggplot(pokemon, aes(x = IsLegendary, y = sp_attack), fill = IsLegendary) +
+ plot3 <- ggplot(pokemon, aes(x = IsLegendary, y = sp_attack , fill = "lightblue")) +
   geom_boxplot() +
   labs(title = "Special Attack", x = "Legendary", y = "Special Attack") +
   theme_minimal()
  
  plot3
  
- plot4 <- ggplot(pokemon, aes(x = IsLegendary, y = sp_defense), fill = IsLegendary) +
+ plot4 <- ggplot(pokemon, aes(x = IsLegendary, y = sp_defense, fill = "lightgreen")) +
   geom_boxplot() +
   labs(title = "Special Defense", x = "Legendary", y = "Special Defense") +
   theme_minimal()
  
  plot4
  
- plot5 <- ggplot(pokemon, aes(x = IsLegendary, y = speed), fill = IsLegendary) +
+ plot5 <- ggplot(pokemon, aes(x = IsLegendary, y = speed, fill = "violet")) +
   geom_boxplot() +
   labs(title = "Speed", x = "Legendary", y = "Speed") +
   theme_minimal()
  
  plot5
  
- plot6 <- ggplot(pokemon, aes(x = IsLegendary, y = hp), fill = IsLegendary) +
+ plot6 <- ggplot(pokemon, aes(x = IsLegendary, y = hp, fill = "red")) +
   geom_boxplot() +
   labs(title = "HP", x = "Legendary", y = "HP") +
   theme_minimal()
@@ -432,8 +438,11 @@ pokemon$HeightCategory <- cut(pokemon$height_m, breaks = height_bins, labels = c
 ```
 
 ```{r}
+
+legendary_data <- pokemon[pokemon$IsLegendary == TRUE,]
+                          
 #Select relevant columns for association rule mining
-selected_data <- pokemon[, c("TotalPoints_binned", "CatchRate_category", "WeightCategory", "HeightCategory", "status")]
+selected_data <- legendary_data[, c("TotalPoints_binned", "CatchRate_category", "WeightCategory", "HeightCategory","ability_1")]
 
 # Convert the data to transactions format
 trans_data <- as(selected_data, "transactions")
@@ -449,37 +458,90 @@ association_rules <- apriori(trans_data,
 # Show the generated association rules
 inspect(association_rules)
 ```
-### Spliting Data
+```{r}
+# Apply association rule mining using FP-Growth algorithm
+#fp_growth_rules <- fpgrowth(trans_data, 
+                           # parameter = list(support = 0.1, confidence = 0.5),
+                           #control = list(verbose = TRUE))
+```
 
 ```{r}
+# Mine association rules using Eclat algorithm
+association_rules_eclat <- eclat(trans_data, parameter = list(support = 0.1, maxlen = 10))
 
-X <- pokemon[c("total_points", "catch_rate", "weight_kg", "height_m")]
-y <- pokemon[["status"]]
+# Display the top rules
+inspect(head(association_rules_eclat))
+```
+
+##Clustering 
+
+###K-mean
+
+
+```{r}
+clust_poke <- subset(pokemon[pokemon$IsLegendary == TRUE, c("name", "attack", "defense")])
+
+scaler <- scale(clust_poke[, c("attack", "defense")])
+
+sse <- numeric(10)
+for (k in 1:10) {
+  kmeans_result <- kmeans(scaler, centers = k)
+  sse[k] <- kmeans_result$tot.withinss
+}
+
+plot_ly(x = 1:10, y = sse, type = 'scatter', mode = 'lines+markers') %>%
+  layout(title = 'The Elbow Method',
+         xaxis = list(title = 'k'),
+         yaxis = list(title = 'SSE'),
+         template = 'plotly_white')
 
 ```
 
-
 ```{r}
+# KMeans Clustering
+k <- 4  # Number of clusters
+set.seed(42)  # Setting seed for reproducibility
+kmeans_model <- kmeans(scaler, centers = k)
+tier <- kmeans_model$cluster  # Assigning clusters
 
-set.seed(42)
+# Adding 'Tier' column to the clust_poke data
+clust_poke$Tier <- as.numeric(as.character(clust_poke$Tier))
 
-split <- createDataPartition(y, p = 0.8, list = FALSE)
-X_train <- X[split, ]
-X_test <- X[-split, ]
-y_train <- y[split]
-y_test <- y[-split]
+# Grouping and aggregating mean values for 'Attack' and 'Defense' by 'Tier'
+agg_data <- aggregate(cbind(attack, defense) ~ Tier, data = clust_poke, FUN = mean)
+agg_data <- round(agg_data, 2)  # Rounding to 2 decimal places
 
+agg_data
+```
+```{r}
+scatter_plot <- ggplot(clust_poke, aes(x = defense, y = attack, color = factor(Tier))) +
+  geom_point() +
+  labs(title = "Attack vs Defense of Legendary Pokemons with their Tier",
+       x = "Defense", y = "Attack") +
+  theme_minimal() +
+  scale_color_discrete(name = "Tier")  # Set color legend title
+
+# Show plot
+print(scatter_plot)
 ```
 
-### Baseline Accuracy
+### hierarchical clustering
 
-```{r}
+```{r fig.width=11}
+ #Scaling the features
+scaler <- scale(clust_poke[, c("attack", "defense")])
 
-acc_baseline <- max(table(y_train)) / length(y_train)
-cat("Baseline Accuracy:", round(acc_baseline, 4), "\n")
+# Calculate the Euclidean distances
+dist_matrix <- dist(scaler)
+
+# Perform hierarchical clustering using complete linkage
+hierarchical_model <- hclust(dist_matrix, method = "complete")
+
+# Plot the dendrogram
+plot(hierarchical_model, main = "Dendrogram of Hierarchical Clustering", xlab = "Pokemon", sub = NULL,labels = clust_poke$name)
 
 ```
-
+### Classification 
 
 ### Buidling the model
 
