@@ -601,6 +601,13 @@ print(class_metrics_knn)
 
 ```
 
+```{r}
+
+print(conf_matrix_knn$table)
+
+```
+
+
 ### Confusion Matrix
 
 ```{r}
