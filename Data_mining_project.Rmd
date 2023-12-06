@@ -10,7 +10,8 @@ pacman::p_load(
   dplyr,
   arules,
   arulesViz,
-  rCBA
+  rCBA,
+  plotly
 )
 
 ```
@@ -296,6 +297,83 @@ ggplot(pokemon, aes(x = height_m, y = weight_kg,
   theme_minimal() 
 
 ```
+### Pokemon Attack VS Defence 
+
+```{r}
+
+#Perform Linear Regression
+model <- lm(attack ~ defense, data = pokemon)
+
+# Create a sequence of X values
+x_range <- seq(min(pokemon$defense), max(pokemon$defense), length.out = 100)
+
+# Predict Y values using the linear regression model
+y_range <- predict(model, newdata = data.frame(defense = x_range))
+
+# Create a scatter plot with ggplot2
+ggplot(pokemon, aes(x = defense, y = attack, color = IsLegendary)) +
+  geom_point(size = 3) +
+  geom_line(data = data.frame(defense = x_range, attack = y_range), aes(x = defense, y = attack), color = "#4a536b", linetype = "solid", size = 1) +
+  labs(title = "Attack Vs Defense", x = "Defense", y = "Attack") +
+  scale_color_manual(values = c('#aed6dc', '#ff9a8d')) +
+  theme_minimal() +
+  theme(legend.position = "bottom") 
+ 
+```
+
+```{r}
+# Define the types
+types <- c('Attack', 'defense', 'sp_attack', 'sp_defense', 'speed', 'hp')
+
+# Create a list to store plots
+plots <- list()
+
+# Create subplots for each type using ggplot2
+
+ plot1 <- ggplot(pokemon, aes(x = IsLegendary, y = attack), fill = IsLegendary) +
+  geom_boxplot() +
+  labs(title = "Attack", x = "Legendary", y = "Attack") +
+  theme_minimal()
+ 
+ plot1
+ 
+  plot2 <- ggplot(pokemon, aes(x = IsLegendary, y = defense), fill = IsLegendary) +
+  geom_boxplot() +
+  labs(title = "Defense", x = "Legendary", y = "Defense") +
+  theme_minimal()
+ 
+ plot2
+ 
+ plot3 <- ggplot(pokemon, aes(x = IsLegendary, y = sp_attack), fill = IsLegendary) +
+  geom_boxplot() +
+  labs(title = "Special Attack", x = "Legendary", y = "Special Attack") +
+  theme_minimal()
+ 
+ plot3
+ 
+ plot4 <- ggplot(pokemon, aes(x = IsLegendary, y = sp_defense), fill = IsLegendary) +
+  geom_boxplot() +
+  labs(title = "Special Defense", x = "Legendary", y = "Special Defense") +
+  theme_minimal()
+ 
+ plot4
+ 
+ plot5 <- ggplot(pokemon, aes(x = IsLegendary, y = speed), fill = IsLegendary) +
+  geom_boxplot() +
+  labs(title = "Speed", x = "Legendary", y = "Speed") +
+  theme_minimal()
+ 
+ plot5
+ 
+ plot6 <- ggplot(pokemon, aes(x = IsLegendary, y = hp), fill = IsLegendary) +
+  geom_boxplot() +
+  labs(title = "HP", x = "Legendary", y = "HP") +
+  theme_minimal()
+ 
+ plot6
+
+```
+
 
 ## Data Mining 
 
