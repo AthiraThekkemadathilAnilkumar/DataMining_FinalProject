@@ -1,0 +1,41 @@
+---
+title: "PokéQuest: A Comprehensive Dive into Pokémon Data"
+subtitle: "INFO 523 FA23 001"
+author: "Group - 7: Lakshmi Neharika Anchula, Athira Thekkemadathil Anilkumar, Swati Das"
+title-slide-attributes:
+  data-background-image: Images/pokemon.jpg
+  data-background-size: stretch
+  data-background-opacity: "0.8"
+  data-slide-number: none
+format:
+  revealjs:
+    theme:  ['data/customtheming.scss']
+    transition: slide
+    background-transition: fade
+    logo: images\pokemon1.png
+    scrollable: true
+
+editor: visual
+execute:
+  warning: false
+  echo: false
+---
+
+## Quarto
+
+Quarto enables you to weave together content and executable code into a finished presentation. To learn more about Quarto presentations see <https://quarto.org/docs/presentations/>.
+
+## Bullets
+
+When you click the **Render** button a document will be generated that includes:
+
+-   Content authored with markdown
+-   Output from executable code
+
+## Code
+
+When you click the **Render** button a presentation will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
