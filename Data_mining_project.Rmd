@@ -115,7 +115,25 @@ pokemon <- pokemon |>
          -egg_type_2,
          -percentage_male,
          -egg_cycles,
-         -type_number)
+         -type_number,
+         -against_normal,
+         -against_fire,
+         -against_water,
+         -against_electric,
+         -against_grass,
+         -against_ice,
+         -against_fight,
+         -against_poison,
+         -against_ground,
+         -against_flying,
+         -against_psychic,
+         -against_bug,
+         -against_rock,
+         -against_ghost,
+         -against_dragon,
+         -against_dark,
+         -against_steel,
+         -against_fairy)
 
 colnames(pokemon)
 ```
@@ -339,6 +357,7 @@ print(correlation_matrix)
 ggplot(pokemon, aes(x = height_m, y = weight_kg, 
                     color = status)) +
   geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
   labs(title = "Scatter plot of Height vs Weight by status", 
        x = "Height (m)", y = "Weight (kg)") +
   theme_minimal() 
@@ -523,7 +542,7 @@ kmeans_model <- kmeans(scaler, centers = k)
 tier <- kmeans_model$cluster  # Assigning clusters
 
 # Adding 'Tier' column to the clust_poke data
-clust_poke$Tier <- as.numeric(as.character(clust_poke$Tier))
+clust_poke$Tier <- tier
 
 # Grouping and aggregating mean values for 'Attack' and 'Defense' by 'Tier'
 agg_data <- aggregate(cbind(attack, defense) ~ Tier, data = clust_poke, FUN = mean)
@@ -559,7 +578,36 @@ hierarchical_model <- hclust(dist_matrix, method = "complete")
 plot(hierarchical_model, main = "Dendrogram of Hierarchical Clustering", xlab = "Pokemon", sub = NULL,labels = clust_poke$name)
 
 ```
-### Classification 
+### Classification
+
+### Splitting Data
+
+```{r}
+
+X <- pokemon[c("total_points", "catch_rate", "weight_kg", "height_m")]
+y <- pokemon[["status"]]
+
+```
+
+```{r}
+
+set.seed(42)
+
+split <- createDataPartition(y, p = 0.8, list = FALSE)
+X_train <- X[split, ]
+X_test <- X[-split, ]
+y_train <- y[split]
+y_test <- y[-split]
+
+```
+
+```{r}
+
+acc_baseline <- max(table(y_train)) / length(y_train)
+cat("Baseline Accuracy:", round(acc_baseline, 4), "\n")
+
+```
+
 
 ### Buidling the model
 
