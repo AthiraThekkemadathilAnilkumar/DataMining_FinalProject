@@ -1,15 +1,19 @@
 ---
 title: "PokéQuest: A Comprehensive Dive into Pokémon Data"
 subtitle: "INFO 523 FA23 001"
-author: "Group - 7: Lakshmi Neharika Anchula, Athira Thekkemadathil Anilkumar, Swati Das"
+author: "Group - 7: Lakshmi Neharika Anchula,<br> Athira Thekkemadathil Anilkumar, <br>Swati Das"
+fontsize: 14pt
+output:
+  html_document:
+    css: style.css
 title-slide-attributes:
-  data-background-image: Images/pokemon.jpg
+  data-background-image: Images/pokemon2.jpg
   data-background-size: stretch
   data-background-opacity: "0.8"
   data-slide-number: none
 format:
   revealjs:
-    theme:  ['data/customtheming.scss']
+    theme: league
     transition: slide
     background-transition: fade
     logo: images\pokemon1.png

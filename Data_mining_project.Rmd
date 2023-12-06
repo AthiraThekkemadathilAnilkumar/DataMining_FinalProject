@@ -449,12 +449,37 @@ association_rules <- apriori(trans_data,
 # Show the generated association rules
 inspect(association_rules)
 ```
+### Spliting Data
+
 ```{r}
-# Apply association rule mining using FP-Growth algorithm
-fp_growth_rules <- fpgrowth(trans_data, 
-                            parameter = list(support = 0.1, confidence = 0.5),
-                            control = list(verbose = TRUE))
+
+X <- pokemon[c("total_points", "catch_rate", "weight_kg", "height_m")]
+y <- pokemon[["status"]]
+
 ```
+
+
+```{r}
+
+set.seed(42)
+
+split <- createDataPartition(y, p = 0.8, list = FALSE)
+X_train <- X[split, ]
+X_test <- X[-split, ]
+y_train <- y[split]
+y_test <- y[-split]
+
+```
+
+### Baseline Accuracy
+
+```{r}
+
+acc_baseline <- max(table(y_train)) / length(y_train)
+cat("Baseline Accuracy:", round(acc_baseline, 4), "\n")
+
+```
+
 
 ### Buidling the model
 
