@@ -613,33 +613,13 @@ cat("Baseline Accuracy:", round(acc_baseline, 4), "\n")
 
 ### Random Forest
 
-### Creating the pipeline
-
-```{r}
-
-preproc <- preProcess(X_train, method = "medianImpute")
-
-```
-
-### Setting parameters
-
-```{r}
-
-params <- expand.grid(
-  strategy = c("mean", "median", "constant"),
-  n_estimators = seq(20, 101, by = 10),
-  max_depth = seq(10, 51, by = 10)
-)
-
-```
-
 ### Building the model with grid search
 
 ```{r warning=FALSE, error=FALSE, message=FALSE}
 
 model_rf_os <- train(
   y = y_train,
-  x = predict(preproc, X_train),
+  x = X_train,
   method = "rf",
   trControl = trainControl(method = "cv", number = 5, verboseIter = TRUE),
   metric = "Accuracy"
@@ -651,8 +631,8 @@ model_rf_os <- train(
 
 ```{r}
 
-acc_train <- mean(model_rf_os$results$Accuracy)
-print(paste("Training Accuracy:", round(acc_train, 4)))
+acc_train_rf <- mean(model_rf_os$results$Accuracy)
+print(paste("Random Forest Training Accuracy:", round(acc_train_rf, 4)))
 
 ```
 
@@ -660,29 +640,18 @@ print(paste("Training Accuracy:", round(acc_train, 4)))
 
 ```{r}
 
-pred <- predict(model_rf_os, newdata = X_test)
-acc_test <- sum(pred == y_test) / length(y_test)
-print(paste("Test Accuracy:", round(acc_test, 4)))
+pred_rf <- predict(model_rf_os, newdata = X_test)
+acc_test_rf <- sum(pred_rf == y_test) / length(y_test)
+print(paste("Random Forest Test Accuracy:", round(acc_test_rf, 4)))
 
 ```
 
 ```{r}
 
-pred <- factor(pred)
-y_test <- factor(y_test)
+conf_matrix_rf <- confusionMatrix(pred_rf, y_test)
+print("Confusion Matrix for Random Forest:")
+print(conf_matrix_rf$table)
 
-conf_matrix <- confusionMatrix(pred, y_test)
-
-class_metrics <- conf_matrix$byClass
-
-print(class_metrics)
-
-
-```
-
-```{r}
-
-print(conf_matrix$table)
 
 ```
 
@@ -690,11 +659,18 @@ print(conf_matrix$table)
 
 ```{r}
 
-plot <- levelplot(conf_matrix$table, col.regions = colorRampPalette(c("white", "darkgreen"))(20))
+plot <- levelplot(conf_matrix_rf$table, col.regions = colorRampPalette(c("white", "darkgreen"))(20))
 
 print(plot)
 
 ```
+
+```{r}
+
+print(conf_matrix_rf$byClass)
+
+```
+
 
 ### KNN
 
@@ -706,7 +682,7 @@ sum(is.na(X_train))
 
 ```
 
-### Imputation of missing values and building the model
+### Building the model
 
 ```{r warning=FALSE, error=FALSE, message=FALSE}
 
@@ -714,7 +690,6 @@ model_knn <- train(
   x = X_train,
   y = y_train,
   method = "knn",
-  preProcess = "medianImpute",
   trControl = trainControl(method = "cv", number = 5, verboseIter = TRUE),
   metric = "Accuracy"
 )
@@ -726,7 +701,7 @@ model_knn <- train(
 ```{r}
 
 acc_train_knn <- mean(model_knn$results$Accuracy)
-print(paste("Training Accuracy:", round(acc_train_knn, 4)))
+print(paste("KNN Training Accuracy:", round(acc_train_knn, 4)))
 
 ```
 
@@ -734,8 +709,9 @@ print(paste("Training Accuracy:", round(acc_train_knn, 4)))
 
 ```{r}
 
-acc_test_knn <- conf_matrix$overall["Accuracy"]
-print(paste("Test Accuracy:", round(acc_test_knn, 4)))
+pred_knn <- predict(model_knn, newdata = X_test)
+acc_test_knn <- sum(pred_knn == y_test) / length(y_test)
+print(paste("KNN Test Accuracy:", round(acc_test_knn, 4)))
 
 ```
 
@@ -743,23 +719,11 @@ print(paste("Test Accuracy:", round(acc_test_knn, 4)))
 
 ```{r}
 
-pred <- factor(pred)
-y_test <- factor(y_test)
-
-conf_matrix_knn <- confusionMatrix(pred, y_test)
-
-class_metrics_knn <- conf_matrix$byClass
-
-print(class_metrics_knn)
-
-```
-
-```{r}
-
+conf_matrix_knn <- confusionMatrix(pred_knn, y_test)
+print("Confusion Matrix for KNN:")
 print(conf_matrix_knn$table)
 
 ```
-
 
 ### Confusion Matrix
 
@@ -768,6 +732,13 @@ print(conf_matrix_knn$table)
 plot <- levelplot(conf_matrix_knn$table, col.regions = colorRampPalette(c("white", "darkgreen"))(20))
 
 print(plot)
+
+```
+
+```{r}
+
+print(conf_matrix_knn$byClass)
+
 
 ```
 
