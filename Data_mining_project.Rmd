@@ -19,7 +19,8 @@ pacman::p_load(
   recipes,
   kernlab,
   preprocessCore,
-  arules
+  arules,
+  patchwork
 )
 ```
 
@@ -371,53 +372,70 @@ ggplot(pokemon, aes(x = defense, y = attack, color = IsLegendary)) +
 # Define the types
 types <- c('Attack', 'defense', 'sp_attack', 'sp_defense', 'speed', 'hp')
 
+custom_colors <- c("pink", "lightyellow", "lightblue", "lightgreen", "violet", "red")
+
+
 # Create a list to store plots
 plots <- list()
 
 # Create subplots for each type using ggplot2
 
- plot1 <- ggplot(pokemon, aes(x = IsLegendary, y = attack, fill = "pink")) +
-  geom_boxplot() +
+ plot1 <- ggplot(pokemon, aes(x = IsLegendary, y = attack)) +
+  geom_boxplot(fill = "pink") +
   labs(title = "Attack", x = "Legendary", y = "Attack") +
   theme_minimal()
  
  plot1
  
-  plot2 <- ggplot(pokemon, aes(x = IsLegendary, y = defense, fill = "lightyellow")) +
-  geom_boxplot() +
+  plot2 <- ggplot(pokemon, aes(x = IsLegendary, y = defense)) +
+  geom_boxplot(fill = "lightyellow") +
   labs(title = "Defense", x = "Legendary", y = "Defense") +
   theme_minimal()
  
  plot2
  
- plot3 <- ggplot(pokemon, aes(x = IsLegendary, y = sp_attack , fill = "lightblue")) +
-  geom_boxplot() +
+ plot3 <- ggplot(pokemon, aes(x = IsLegendary, y = sp_attack)) +
+  geom_boxplot(fill = "lightblue") +
   labs(title = "Special Attack", x = "Legendary", y = "Special Attack") +
   theme_minimal()
  
  plot3
  
- plot4 <- ggplot(pokemon, aes(x = IsLegendary, y = sp_defense, fill = "lightgreen")) +
-  geom_boxplot() +
+ plot4 <- ggplot(pokemon, aes(x = IsLegendary, y = sp_defense)) +
+  geom_boxplot(fill = "lightgreen") +
   labs(title = "Special Defense", x = "Legendary", y = "Special Defense") +
   theme_minimal()
  
  plot4
  
- plot5 <- ggplot(pokemon, aes(x = IsLegendary, y = speed, fill = "violet")) +
-  geom_boxplot() +
+ plot5 <- ggplot(pokemon, aes(x = IsLegendary, y = speed)) +
+  geom_boxplot(fill = "red") +
+  scale_fill_manual(values = custom_colors) + 
   labs(title = "Speed", x = "Legendary", y = "Speed") +
   theme_minimal()
  
  plot5
  
- plot6 <- ggplot(pokemon, aes(x = IsLegendary, y = hp, fill = "red")) +
-  geom_boxplot() +
+ plot6 <- ggplot(pokemon, aes(x = IsLegendary, y = hp)) +
+  geom_boxplot(fill = "violet") +
   labs(title = "HP", x = "Legendary", y = "HP") +
   theme_minimal()
  
  plot6
 
+```
+```{r}
+ggplot(pokemon, aes(x = IsLegendary, y = total_points)) + 
+  geom_boxplot(aes(fill = IsLegendary)) + 
+  guides(fill = "none") + 
+  labs(title = "Distribution of Total Points", 
+       x = "Legendary", 
+       y = "Total Points") +
+  theme_minimal()
+```
+```{r fig.width = 8}
+combined_plots <- plot1 + plot2 + plot3 + plot4 + plot5 + plot6
+combined_plots
 ```
 
 
@@ -430,7 +448,7 @@ plots <- list()
 pokemon$TotalPoints_binned <- cut(pokemon$total_points, breaks = 3, labels = c("Low", "Medium", "High"))
 pokemon$CatchRate_category <- cut(pokemon$catch_rate, breaks = c(0, 50, 100, 255), labels = c("Low", "Medium", "High"))
 
-# Define bins for Weight and Height based on quartiles (you can customize these)
+#  bins for Weight and Height based on quartiles
 weight_bins <- quantile(pokemon$weight_kg, probs = c(0, 0.33, 0.66, 1), na.rm = TRUE)
 height_bins <- quantile(pokemon$height_m, probs = c(0, 0.33, 0.66, 1), na.rm = TRUE)
 pokemon$WeightCategory <- cut(pokemon$weight_kg, breaks = weight_bins, labels = c("Light", "Medium", "Heavy"))
