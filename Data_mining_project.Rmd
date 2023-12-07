@@ -488,12 +488,13 @@ trans_data <- as(selected_data, "transactions")
 association_rules <- apriori(trans_data, 
                              parameter = list(support = 0.1, confidence = 0.7), 
                              control = list(verbose = TRUE))
+Rules_supp <- sort(association_rules, by = "support", decreasing = TRUE) # sort by supports
 
 ```
 
 ```{r}
 # Show the generated association rules
-inspect(association_rules)
+inspect(Rules_supp)
 ```
 ```{r}
 # Apply association rule mining using FP-Growth algorithm
@@ -504,10 +505,14 @@ inspect(association_rules)
 
 ```{r}
 # Mine association rules using Eclat algorithm
-association_rules_eclat <- eclat(trans_data, parameter = list(support = 0.1, maxlen = 10))
+association_rules_eclat <- eclat(trans_data, parameter = list(support = 0.1, maxlen = 25))
+EclatRules_supp <- sort(association_rules_eclat, by = "support", decreasing = TRUE) # sort by supports
+```
 
+
+```{r}
 # Display the top rules
-inspect(head(association_rules_eclat))
+inspect((EclatRules_supp))
 ```
 
 ##Clustering 
